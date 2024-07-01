@@ -29,6 +29,10 @@ image_dir = 'images/train'
 result_dir = 'labels2'
 result_files = os.listdir(result_dir)
 IoUresults = []
+avgIoU = []
+avgIoUNotNull = []
+avgPrecision = []
+avgRecall = []
 totalIoU = 0
 IoUNotNull = 0
 totalCount = 0
@@ -84,6 +88,10 @@ for i in range(0, len(os.listdir(image_dir))):
             CountNotDetected += 1
     IoUresults.append(IoU)
 
+    avgIoU.append(totalIoU/(totalCount+CountNotDetected))
+    avgIoUNotNull.append(IoUNotNull/NotNullCount)
+    avgPrecision.append(NotNullCount/totalCount)
+    avgRecall.append(NotNullCount/(NotNullCount+CountNotDetected))
     if i%100 == 0:
         print("At image", i, ", we have:")
         print("Average IoU (including false positive and undetected faces):", totalIoU/(totalCount+CountNotDetected))
@@ -91,20 +99,27 @@ for i in range(0, len(os.listdir(image_dir))):
         print("Precision (Ratio between successful detection and total detections):", NotNullCount/totalCount)
         print("Recall (Ratio between successful detection and total faces):", NotNullCount/(NotNullCount+CountNotDetected))
 
+    if i%1000 == 0:
+        plt.plot(avgIoU)
+        plt.plot(avgIoUNotNull)
+        plt.plot(avgPrecision)
+        plt.plot(avgRecall)
+        plt.show()
 
-    # if len(face) != 0:
-    #     for i in range (0, len(face)):
-    #         (x, y, w, h) = face[i]
-    #         if IoU[i] > 0.5:
-    #             cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    #         else:
-    #             cv2.rectangle(image, (x, y), (x+w, y+h), (0, 0, 255), 2)
-    # if len(result) != 0:
-    #     for (_, _, x, y, w, h) in result:
-    #         x, y, w, h = float(x), float(y), float(w), float(h)
-    #         cv2.rectangle(image, (int(x), int(y)), (int(w), int(h)), (255, 0, 0), 2)
-    # cv2.imshow('Image', image)
-    # cv2.waitKey(0)
+
+    if len(face) != 0:
+        for i in range (0, len(face)):
+            (x, y, w, h) = face[i]
+            if IoU[i] > 0.5:
+                cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            else:
+                cv2.rectangle(image, (x, y), (x+w, y+h), (0, 0, 255), 2)
+    if len(result) != 0:
+        for (_, _, x, y, w, h) in result:
+            x, y, w, h = float(x), float(y), float(w), float(h)
+            cv2.rectangle(image, (int(x), int(y)), (int(w), int(h)), (255, 0, 0), 2)
+    cv2.imshow('Image', image)
+    cv2.waitKey(0)
 
 # cv2.destroyAllWindows()
 average_IoU = np.mean(IoUresults)
